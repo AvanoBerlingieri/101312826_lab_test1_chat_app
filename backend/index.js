@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const usersRoutes = require("./routes/user");
 const cors = require("cors");
 require("dotenv").config();
 
@@ -10,6 +11,7 @@ const DB_CONNECTION_STRING = process.env.DB_CONNECTION_STRING;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use("/api", usersRoutes);
 
 app.get("/", (req, res) => {
     res.send("<h1>COMP3133 Lab Test 1</h1>");
