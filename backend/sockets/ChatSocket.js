@@ -14,9 +14,12 @@ module.exports = function (ioServer) {
         socket.on("registerUser", (username) => {
             socket.username = username;
 
-            // assign mapping
+            // mapping users
             users[socket.id] = username;
             userSockets[username] = socket.id;
+
+            // send user list to all connected clients
+            ioServer.emit("onlineUsers", Object.values(users));
         });
 
         // join a room
@@ -36,13 +39,13 @@ module.exports = function (ioServer) {
         // disconnect the socket
         socket.on("disconnect", () => {
             delete users[socket.id];
-            delete userSockets[socket.id];
+            delete userSockets[socket.username];
+            ioServer.emit("onlineUsers", Object.values(users));
         });
 
         // group message
         socket.on("groupMessage", async ({message}) => {
 
-            // validation check
             if (!socket.username || !socket.room) return;
 
             // saves the message
@@ -59,25 +62,26 @@ module.exports = function (ioServer) {
         // private message
         socket.on("privateMessage", async ({to_user, message}) => {
 
-            // validation check
             if (!socket.username || !to_user || !message) return;
 
-            const targetSocket = userSockets[to_user];
-
-            if (targetSocket) {
-                ioServer.to(targetSocket).emit("privateMessage", {
-                    from_user: socket.username,
-                    message
-                });
-            }
-
-            // saves the message
-            await PrivateMessage.create({
+            const msg = {
                 from_user: socket.username,
                 to_user,
                 message
-            });
-        });
+            };
 
+            const targetSocket = userSockets[to_user];
+
+            // send to receiver
+            if (targetSocket) {
+                ioServer.to(targetSocket).emit("privateMessage", msg);
+            }
+
+            // send msg to sender so chat is updated for both sides
+            socket.emit("privateMessage", msg);
+
+            // save message
+            await PrivateMessage.create(msg);
+        });
     });
 };

@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt")
 const UsersModel = require("../models/user")
 const routes = express.Router()
 
-routes.post("/user/signup", (req, res) => {
+routes.post("/signup", (req, res) => {
     const userInfo = req.body;
 
     // validate if all info is filled out
@@ -58,7 +58,7 @@ routes.post("/user/signup", (req, res) => {
     })
 })
 
-routes.post("/user/login", (req, res) => {
+routes.post("/login", (req, res) => {
     const loginInfo = req.body;
 
     // validate if all info is filled out
@@ -109,10 +109,5 @@ routes.post("/user/login", (req, res) => {
         })
     })
 })
-
-// user logout
-routes.post("/user/logout", (req, res) => {
-    // TODO
-});
 
 module.exports = routes
